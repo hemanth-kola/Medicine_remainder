@@ -1,0 +1,180 @@
+		CLR P0.3			;Clear Row3
+			CALL IDCode0		;Call scan column subroutine
+			JB F0,Done  		;If F0 is set, end program 
+						
+			;Scan Row2
+			CLR P0.2			;Clear Row2
+			CALL IDCode1		;Call scan column subroutine
+			JB F0,Done		 	;If F0 is set, end program 						
+
+			;Scan Row1
+			CLR P0.1			;Clear Row1
+			CALL IDCode2		;Call scan column subroutine
+			JB F0,Done			;If F0 is set, end program 
+
+			;Scan Row0
+			CLR P0.0			;Clear Row0
+			CALL IDCode3		;Call scan column subroutine
+			JB F0,Done			;If F0 is set, end program 
+														
+			
+							
+Done:
+Start:	MOV A,R7
+Mov R1,A;Number of hours
+UP:Mov R2,#5
+Two:MOV R3,#6
+HERE:MOV TMOD , #10H ; TIMER 1 IN MODE 1
+MOV TL1,#0H
+MOV TH1,#0H
+SETB TR1
+Again:JNB TF1,Again
+CLR TF1
+DJNZ R3,HERE
+DJNZ R2,TWO
+DJNZ R1,UP
+
+
+MOV A,#38H
+ACALL COM
+ACALL DELAY
+MOV A,#0EH
+ACALL COM
+ACALL DELAY
+MOV A, #01
+ACALL COM
+ACALL DELAY
+MOV A,#06H
+ACALL COM
+ACALL DELAY
+
+MOV DPTR,#STRING
+BACK:MOV A,#00H
+MOVC A,@A+DPTR
+JZ EXIT
+ACALL DATA
+INC DPTR
+SJMP BACK
+EXIT:
+Acall PQ
+MOV A,#01
+ACALL COM
+ACALL DELAY
+
+SJMP Start
+
+DELAY:
+MOV R0,#50
+STAY1:MOV R4,#255
+STAY2:DJNZ R4,STAY2
+DJNZ R0, STAY1
+RET
+
+COM:MOV P1,A
+CLR P0.3
+SETB p0.2
+ACALL DELAY
+CLR P0.2
+RET
+DATA:MOV P1,A
+SETB P0.3
+SETB P0.2
+ACALL DELAY
+CLR P0.2
+RET
+
+PQ:
+MOV R5,#30
+HERE1:MOV TMOD , #10H ; TIMER 1 IN MODE 1
+MOV TL1,#0H
+MOV TH1,#0H
+SETB TR1
+Again1:JNB TF1,Again1
+CLR TF1
+DJNZ R5,HERE1
+RET
+STRING: DB 'E','A','T',' ','M','E','D'
+	
+			;Scan column subroutine
+IDCode0:	JNB P0.4, KeyCode03	;If Col0 Row3 is cleared - key found
+			JNB P0.5, KeyCode13	;If Col1 Row3 is cleared - key found
+			JNB P0.6, KeyCode23	;If Col2 Row3 is cleared - key found
+			RET	
+				
+
+KeyCode03:	SETB F0			;Key found - set F0
+			Mov R7,#03	;Code for '3'
+			
+			RET				
+
+KeyCode13:	SETB F0			;Key found - set F0
+			Mov R7,#02	;Code for '2'
+			
+			RET				
+
+KeyCode23:	SETB F0			;Key found - set F0
+			Mov R7,#01	;Code for '1'
+			
+			RET				
+
+IDCode1:	JNB P0.4, KeyCode02	;If Col0 Row2 is cleared - key found
+			JNB P0.5, KeyCode12	;If Col1 Row2 is cleared - key found
+			JNB P0.6, KeyCode22	;If Col2 Row2 is cleared - key found
+			RET					
+
+KeyCode02:	SETB F0			;Key found - set F0
+			Mov R7,#06		;Code for '6'
+			
+			RET				
+
+KeyCode12:	SETB F0			;Key found - set F0
+			Mov R7,#05		;Code for '5'
+			
+			RET				
+
+KeyCode22:	SETB F0			;Key found - set F0
+			Mov R7,#04h		;Code for '4'
+			
+			RET				
+
+IDCode2:	JNB P0.4, KeyCode01	;If Col0 Row1 is cleared - key found
+			JNB P0.5, KeyCode11	;If Col1 Row1 is cleared - key found
+			JNB P0.6, KeyCode21	;If Col2 Row1 is cleared - key found
+			RET					
+
+KeyCode01:	SETB F0			;Key found - set F0
+			Mov R7,#9		;Code for '9'
+			
+			RET				
+
+KeyCode11:	SETB F0			;Key found - set F0
+			Mov R7,#8		;Code for '8'
+			
+			RET				
+
+KeyCode21:	SETB F0			;Key found - set F0
+			Mov R7,#07	;Code for '7'
+			
+			RET				
+
+IDCode3:	JNB P0.4, KeyCode00	;If Col0 Row0 is cleared - key found
+			JNB P0.5, KeyCode10	;If Col1 Row0 is cleared - key found
+			JNB P0.6, KeyCode20	;If Col2 Row0 is cleared - key found
+			RET					
+
+KeyCode00:	SETB F0			;Key found - set F0
+			Mov R7,#0BFh	;Code for '-' replacing '#'. '#' cannot be display on 7-segment
+			Mov P1,R7		;Display key pressed
+			RET				
+
+KeyCode10:	SETB F0			;Key found - set F0
+			Mov R7,#0	;Code for '0'
+			
+			RET				
+
+KeyCode20:	SETB F0			;Key found - set F0
+			Mov R7,#0BFh	;Code for '-' replacing ''. '' cannot be display on 7-segment
+			Mov P1,R7		;Display key pressed
+			RET				
+		  
+			End
